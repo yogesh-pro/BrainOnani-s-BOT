@@ -1,0 +1,14 @@
+{
+  "token": "MTAwMzYwNTcxOTM3Mjc5MTgxOA.GN6Uv0.b9XstKo3tfuL0cak2OJq2tUMhCNVVJkxT3tLWA",
+  "join_message": "I has joined to do stuff 🌟",
+  "points_log_channel" : "1004228019122085991",
+  "owners": [
+    761073681790926848
+  ],
+  "prefix": [
+    ";"
+  ],
+  "activity": "games!",
+  "activity_type": "playing|watching|listening|competing",
+  "status_type": "online|idle|dnd"
+}
