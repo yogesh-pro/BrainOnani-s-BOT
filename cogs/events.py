@@ -82,10 +82,6 @@ class Events(commands.Cog):
         status = self.config["status_type"].lower()
         status_type = {"idle": discord.Status.idle, "dnd": discord.Status.dnd}
 
-        # Check if user desires to have a different type of activity
-        activity = self.config["activity_type"].lower()
-        activity_type = {"listening": 2, "watching": 3, "competing": 5}
-
         await self.bot.change_presence(
             activity=discord.Activity(
                 type=2, name=self.config["activity"]

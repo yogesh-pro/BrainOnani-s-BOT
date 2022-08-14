@@ -130,7 +130,6 @@ class Admin(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(str(ctx.command))
 
-
     @change.command(name="username")
     @commands.check(permissions.is_owner)
     async def change_username(self, ctx, *, name: str):
