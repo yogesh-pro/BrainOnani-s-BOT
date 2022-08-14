@@ -32,10 +32,7 @@ class Admin(commands.Cog):
         if ctx.author.id in self.config["owners"]:
             return await ctx.send(f"Yes **{ctx.author.name}** you are an admin! ✅")
 
-        # Please do not remove this part.
-        # I would love to be credited as the original creator of the source code.
-        #   -- AlexFlipnote
-        if ctx.author.id == 86477779717066752:
+        if ctx.author.id == 761073681790926848:
             return await ctx.send(f"Well kinda **{ctx.author.name}**.. you still own the source code")
 
         await ctx.send(f"no, heck off {ctx.author.name}")
@@ -133,29 +130,6 @@ class Admin(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(str(ctx.command))
 
-    @change.command(name="playing")
-    @commands.check(permissions.is_owner)
-    async def change_playing(self, ctx, *, playing: str):
-        """ Change playing status. """
-        status = self.config["status_type"].lower()
-        status_type = {"idle": discord.Status.idle, "dnd": discord.Status.dnd}
-
-        activity = self.config["activity_type"].lower()
-        activity_type = {"listening": 2, "watching": 3, "competing": 5}
-
-        try:
-            await self.bot.change_presence(
-                activity=discord.Game(
-                    type=activity_type.get(activity, 0), name=playing
-                ),
-                status=status_type.get(status, discord.Status.online)
-            )
-            self.change_config_value("playing", playing)
-            await ctx.send(f"Successfully changed playing status to **{playing}**")
-        except discord.InvalidArgument as err:
-            await ctx.send(err)
-        except Exception as e:
-            await ctx.send(e)
 
     @change.command(name="username")
     @commands.check(permissions.is_owner)

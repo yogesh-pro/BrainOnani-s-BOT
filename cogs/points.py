@@ -30,7 +30,6 @@ class Points(commands.Cog):
     @commands.command()
     async def top(self,ctx,value=1):
         '''See the ranking list.'''
-        await ctx.trigger_typing()
         db = database()
         data = list(db.find().sort("points",pymongo.DESCENDING))
         text = []
@@ -156,6 +155,7 @@ class Points(commands.Cog):
     @commands.command()
     @commands.has_role('Founder')
     async def resetpoints(self,ctx,month):
+        '''Reset point count of all members.'''
         async with ctx.channel.typing():
             client = pymongo.MongoClient("mongodb+srv://yogesh:malware@cluster0.qr7kl.mongodb.net/?retryWrites=true&w=majority")
             db = client['main-database']

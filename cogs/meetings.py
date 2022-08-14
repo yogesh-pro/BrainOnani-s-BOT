@@ -1,7 +1,14 @@
-
 import discord
-from discord.ext import commands
 import pymongo
+
+from discord.ext import commands
+from discord.ui import Button, View
+from cogs.events import meet_msg_ids
+from utils import default
+
+
+config = default.config()
+MEET_MESSAGE_IDS = []
 
 class Meetings(commands.Cog):
     def __init__(self, bot):
@@ -10,25 +17,56 @@ class Meetings(commands.Cog):
     
     @commands.command(aliases=['mm'])
     @commands.guild_only()
+    @commands.has_any_role('og','admin')
     async def meetmsg(self,ctx,msg_id:str):
-        msg_id = int(msg_id)
-        msg = await ctx.fetch_message(msg_id)
-        db = self.db
-        coll = db['general']
-        print(msg.content)
-        old_data = coll.find_one({"data":{"type":"meetings_ids"}})
-        old_data = [] if (old_data is None) else old_data["data"]
-        input_data = {
-            "type" : "meeting_ids",
-            "data" : list(old_data).append(msg_id)
-        }
-        
-        if old_data is []:
-            coll.insert_one({"data":input_data})
-        else:
-            coll.update_one({"type":"meetings_ids"},{"$set" : {"data" : input_data["data"]}})
-        
-        await ctx.send("done")
+        '''Define a message as a meeting message.'''
+        async with ctx.channel.typing():
+            global MEET_MESSAGE_IDS
+            msg_id = int(msg_id)
+            msg = await ctx.fetch_message(msg_id)
+            db = self.db
+            coll = db['general']
+            old_data = coll.find({"data.type":"meeting_ids"})
+            old_data = [] if (old_data is None) else [x for x in old_data][0]["data"]["data"]
+            MEET_MESSAGE_IDS = old_data
+            input_data = {
+                "type" : "meeting_ids",
+                "data" : old_data+[msg_id]
+            }
+            if old_data == []:
+                coll.insert_one({"data":input_data})
+            else:
+                coll.update_one({"data.type":"meeting_ids"},{"$set" : {"data.data" : input_data["data"]}})
+            await ctx.message.delete()
+            cnl = self.bot.get_channel(int(config["meet_log_channel"]))
+            await cnl.send(
+                f"{msg.content}\nThis message has been set as a meet message by {ctx.author}"
+            )
+            
+            meet_msg_ids()
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_any_role('og','admin')
+    async def alert(self,ctx,*,msg=None):
+        '''DM all intrested members a remainder of meeting.'''
+        members = discord.utils.get(ctx.guild.roles,name="attendee").members
+        embed = discord.Embed(title="Meeting Update!",description=f"{msg}")
+        button = Button(label="Join now",url="https://discord.com/channels/999239208831037580/999239209263046697")
+        view = View().add_item(button)
+        for user in members:
+            await user.send(embed=embed,view=view)
+
+    @commands.command(name='endmeet')
+    @commands.guild_only()
+    @commands.has_any_role('og','admin')
+    async def end_meet(self,ctx):
+        '''Remove meeting from schedule.'''
+        role = discord.utils.get(ctx.guild.roles,name="attendee")
+        members = role.members
+        for user in members:
+            await user.remove_roles(role)
+        await ctx.reply("Done!")
 
 
 async def setup(bot):

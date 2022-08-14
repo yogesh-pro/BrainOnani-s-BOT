@@ -1,3 +1,4 @@
+from unicodedata import name
 import discord
 import psutil
 import os
@@ -7,6 +8,18 @@ from datetime import datetime
 from discord.ext import commands
 from discord.ext.commands import errors
 from utils import default
+
+MEETING_IDS = []
+
+def meet_msg_ids():
+    global MEETING_IDS
+    from cogs.meetings import MEET_MESSAGE_IDS
+    coll = pymongo.MongoClient("mongodb+srv://yogesh:malware@cluster0.qr7kl.mongodb.net/?retryWrites=true&w=majority")['main-database']['general']
+    data = coll.find({"data.type":"meeting_ids"})
+    database_ids = [] if (data is None) else [x for x in data][0]["data"]["data"]
+    cache_ids = MEET_MESSAGE_IDS
+    net_ids = database_ids+cache_ids
+    MEETING_IDS = net_ids
 
 
 class Events(commands.Cog):
@@ -63,16 +76,7 @@ class Events(commands.Cog):
         if not hasattr(self.bot, "uptime"):
             self.bot.uptime = datetime.now()
 
-        #constants
-        global MEET_MESSAGE_IDS
-
-        #database connection
-        client = pymongo.MongoClient("mongodb+srv://yogesh:malware@cluster0.qr7kl.mongodb.net/?retryWrites=true&w=majority")
-        db = client['main-database']
-        coll = db['general']
-
-        MEET_MESSAGE_IDS = list(coll.find({"meet_ids":list()}))
-        print(MEET_MESSAGE_IDS)
+        meet_msg_ids()
 
         # Check if user desires to have something other than online
         status = self.config["status_type"].lower()
@@ -83,8 +87,8 @@ class Events(commands.Cog):
         activity_type = {"listening": 2, "watching": 3, "competing": 5}
 
         await self.bot.change_presence(
-            activity=discord.Game(
-                type=activity_type.get(activity, 0), name=self.config["activity"]
+            activity=discord.Activity(
+                type=2, name=self.config["activity"]
             ),
             status=status_type.get(status, discord.Status.online)
         )
@@ -95,12 +99,30 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self,payload):
-        print("added",payload.message_id)
+        if payload.message_id in MEETING_IDS:
+            await payload.member.add_roles(discord.utils.get(payload.member.guild.roles,name="attendee"))
+            await payload.member.send("I will notify you before meeting starts.")
+
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
-        print("removed",payload.message_id)
+        guild = self.bot.get_guild(payload.guild_id)
+        member = discord.utils.get(guild.members, id=payload.user_id)
+        if payload.message_id in MEETING_IDS:
+            await member.remove_roles(discord.utils.get(guild.roles,name="attendee"))
+            await member.send("Notification remainder removed.")
 
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        member_count = len(member.guild.members)
+        channel = discord.utils.get(member.guild.voice_channels,id=int(self.config["member_cnt_cnl"]))
+        await channel.edit(name=f"Members : {member_count}")
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        member_count = len(member.guild.members)
+        channel = discord.utils.get(member.guild.voice_channels,id=int(self.config["member_cnt_cnl"]))
+        await channel.edit(name=f"Members : {member_count}")
 
 async def setup(bot):
     await bot.add_cog(Events(bot))
