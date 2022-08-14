@@ -27,19 +27,11 @@ class Information(commands.Cog):
         """ Invite me to your server """
         await ctx.send(f"**{ctx.author.name}**, use this URL to invite me\n<{discord.utils.oauth_url(self.bot.user.id)}>")
 
-    @commands.command()
-    async def source(self, ctx):
-        """ Check out my source code <3 """
-        # Do not remove this command, this has to stay due to the GitHub LICENSE.
-        # TL:DR, you have to disclose source according to MIT, don't change output either.
-        # Reference: https://github.com/AlexFlipnote/discord_bot.py/blob/master/LICENSE
-        await ctx.send(f"**{ctx.bot.user}** is powered by this source code:\nhttps://github.com/AlexFlipnote/discord_bot.py")
-
     @commands.command(aliases=["supportserver", "feedbackserver"])
     async def botserver(self, ctx):
         """ Get an invite to our support server! """
-        if isinstance(ctx.channel, discord.DMChannel) or ctx.guild.id != 86484642730885120:
-            return await ctx.send(f"**Here you go {ctx.author.name} 🍻**\nhttps://discord.gg/DpxkY3x")
+        if isinstance(ctx.channel, discord.DMChannel) or ctx.guild.id != 999239208831037580:
+            return await ctx.send(f"**Here you go {ctx.author.name} 🍻**\nhttps://discord.gg/AgxhAJzxUm")
         await ctx.send(f"**{ctx.author.name}** this is my home you know :3")
 
     @commands.command()
