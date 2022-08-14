@@ -120,5 +120,14 @@ class Events(commands.Cog):
         channel = discord.utils.get(member.guild.voice_channels,id=int(self.config["member_cnt_cnl"]))
         await channel.edit(name=f"Members : {member_count}")
 
+    @commands.Cog.listener()
+    async def on_member_join(self,member):
+        channel = self.bot.get_channel(self.config["welcome-channel-id"])
+        embed = discord.Embed(color = "#ffd700",
+        description=f'''Hey {member.mention}, welcome to your own BrainOnani community!
+        Learn, Lead and Serve Brainstorming ideas into reality to make a difference together through this community !'''
+        )
+        await channel.send(embed=embed)
+
 async def setup(bot):
     await bot.add_cog(Events(bot))
