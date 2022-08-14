@@ -122,7 +122,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self,member):
-        channel = self.bot.get_channel(self.config["welcome-channel-id"])
+        channel = self.bot.get_channel(int(self.config["welcome-channel-id"]))
         embed = discord.Embed(color = "#ffd700",
         description=f'''Hey {member.mention}, welcome to your own BrainOnani community!
         Learn, Lead and Serve Brainstorming ideas into reality to make a difference together through this community !'''
