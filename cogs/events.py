@@ -109,12 +109,6 @@ class Events(commands.Cog):
             await member.send("Notification remainder removed.")
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
-        member_count = len(member.guild.members)
-        channel = discord.utils.get(member.guild.voice_channels,id=int(self.config["member_cnt_cnl"]))
-        await channel.edit(name=f"Members : {member_count}")
-
-    @commands.Cog.listener()
     async def on_member_remove(self, member):
         member_count = len(member.guild.members)
         channel = discord.utils.get(member.guild.voice_channels,id=int(self.config["member_cnt_cnl"]))
@@ -122,6 +116,9 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self,member):
+        member_count = len(member.guild.members)
+        channel = discord.utils.get(member.guild.voice_channels,id=int(self.config["member_cnt_cnl"]))
+        await channel.edit(name=f"Members : {member_count}")
         channel = self.bot.get_channel(int(self.config["welcome-channel-id"]))
         embed = discord.Embed(color = 0xffd700,
         description=f'''Hey {member.mention}, welcome to your own BrainOnani community!
