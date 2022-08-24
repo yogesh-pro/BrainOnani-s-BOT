@@ -1,7 +1,11 @@
 import discord
-from discord.ext import commands
 import pymongo
+
+from utils import ui
+
+from discord.ext import commands
 from utils import default
+
 config = default.config()
 
 def database():
@@ -43,31 +47,39 @@ class Points(commands.Cog):
     @commands.has_role("Founder")
     async def addpoints(self,ctx,points:int = 1,reason=None,*user:discord.Member):
         '''To give points to a member.'''
-        async with ctx.channel.typing():
-            try:
-                db = database()
-                LOG_CHANNEL = self.bot.get_channel(int(config.get("points_log_channel")))
-            except:
-                await ctx.send("Can't connect to the databse. `Contact Admin!`")
-
-            users = [*user]
-            try:
-                for user in users:
-                    old_points = db.find_one({"chr_id" : user.id})
-                    old_points = 0 if (old_points==None) else old_points.get("points")
-                    if old_points == 0:
-                        db.insert_one({"chr_id" : user.id,"name" : str(user.name)+f"#{user.discriminator}","points" : points})
-                    else:
-                        db.update_one({"chr_id" : user.id}, {"$set" : {"points" : old_points+points}})
-                    await user.send(f'''You were given `{points}` Points by {ctx.author}''' + str("" if reason=="" else f"for {reason}"))
-                embed = discord.Embed(title = "Points Update",color = discord.Color.green())
-                embed.add_field(name="Points given",value=points)
-                embed.add_field(name="User(s)",value=f"{' , '.join([x.display_name for x in users])}")
-                embed.set_footer(text = f"Updated by {ctx.author}")
-                await ctx.send(embed = embed)
-                await LOG_CHANNEL.send(embed=embed)
-            except:
-                await ctx.send("Oh No! The code broke. `contact admin`.")
+        view = ui.Confirm()
+        confirm = await ctx.send(f"You want to add {points} Points?",view=view)
+        await view.wait()
+        if view.value is None:
+            await ctx.send("TimeOut! Please resend point request and respond faster.")
+        elif view.value:
+            await confirm.delete()
+            async with ctx.channel.typing():
+                try:
+                    db = database()
+                    LOG_CHANNEL = self.bot.get_channel(int(config.get("points_log_channel")))
+                except:
+                    await ctx.send("Can't connect to the databse. `Contact Admin!`")
+                users = [*user]
+                try:
+                    for user in users:
+                        old_points = db.find_one({"chr_id" : user.id})
+                        old_points = 0 if (old_points==None) else old_points.get("points")
+                        if old_points == 0:
+                            db.insert_one({"chr_id" : user.id,"name" : str(user.name)+f"#{user.discriminator}","points" : points})
+                        else:
+                            db.update_one({"chr_id" : user.id}, {"$set" : {"points" : old_points+points}})
+                        await user.send(f'''You were given `{points}` Points by {ctx.author}''' + str("" if reason=="" else f"for {reason}"))
+                    embed = discord.Embed(title = "Points Update",color = discord.Color.green())
+                    embed.add_field(name="Points given",value=points)
+                    embed.add_field(name="User(s)",value=f"{' , '.join([x.display_name for x in users])}")
+                    embed.set_footer(text = f"Updated by {ctx.author}")
+                    await ctx.send(embed = embed)
+                    await LOG_CHANNEL.send(embed=embed)
+                except:
+                    await ctx.send("Oh No! The code broke. `contact admin`.")
+        else:
+            await ctx.send("No points added!")
 
     @commands.command(aliases=['rp','rpoints'])
     @commands.has_role("Founder")
@@ -160,7 +172,6 @@ class Points(commands.Cog):
             client = pymongo.MongoClient("mongodb+srv://yogesh:malware@cluster0.qr7kl.mongodb.net/?retryWrites=true&w=majority")
             db = client['main-database']
             coll = db['points-history']
-
             dbb = database()
             data = {f"{month}" : [*list(dbb.find())]}
             coll.insert_one(data)

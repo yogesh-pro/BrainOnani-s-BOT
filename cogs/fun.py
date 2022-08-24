@@ -6,7 +6,7 @@ import aiohttp
 
 from io import BytesIO
 from discord.ext import commands
-from utils import permissions, http, default
+from utils import permissions, http, default, ui
 
 
 class Fun_Commands(commands.Cog):
@@ -50,6 +50,11 @@ class Fun_Commands(commands.Cog):
             bio = BytesIO(req)
             bio.seek(0)
             await ctx.send(content=content, file=discord.File(bio, filename=filename))
+            
+    @commands.command()
+    async def tic(self,ctx: commands.Context):
+        """Starts a tic-tac-toe game with yourself."""
+        await ctx.send('Tic Tac Toe: X goes first', view=ui.TicTacToe())
 
     @commands.command()
     @commands.cooldown(rate=1, per=1.5, type=commands.BucketType.user)
