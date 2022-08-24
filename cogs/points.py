@@ -44,7 +44,7 @@ class Points(commands.Cog):
         await ctx.reply("\n".join(text))
  
     @commands.command(aliases=['ap','apoints'])
-    @commands.has_role("Founder")
+    @commands.has_role("og")
     async def addpoints(self,ctx,points:int = 1,reason=None,*user:discord.Member):
         '''To give points to a member.'''
         view = ui.Confirm()
@@ -82,7 +82,7 @@ class Points(commands.Cog):
             await ctx.send("No points added!")
 
     @commands.command(aliases=['rp','rpoints'])
-    @commands.has_role("Founder")
+    @commands.has_role("og")
     async def removepoints(self,ctx,points:int = 1,reason=None,*user:discord.Member):
         '''To remove points from a member.'''
         async with ctx.channel.typing():
@@ -112,7 +112,7 @@ class Points(commands.Cog):
                 await ctx.send("Oh No! The code broke. `contact admin`.")
 
     @commands.command(aliases=['apfa'])
-    @commands.has_role("Founder")
+    @commands.has_role("og")
     async def addpointsforattendence(self,ctx,points=5):
         '''To give points to a meeting attendee.'''
         async with ctx.channel.typing():
@@ -165,7 +165,7 @@ class Points(commands.Cog):
             await ctx.send("Oh No! The code broke. `contact admin`.") 
 
     @commands.command()
-    @commands.has_role('Founder')
+    @commands.has_role('og')
     async def resetpoints(self,ctx,month):
         '''Reset point count of all members.'''
         async with ctx.channel.typing():
