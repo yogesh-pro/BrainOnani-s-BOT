@@ -121,8 +121,29 @@ class Events(commands.Cog):
         await channel.edit(name=f"Members : {member_count}")
         channel = self.bot.get_channel(int(self.config["welcome-channel-id"]))
         embed = discord.Embed(color = 0xffd700,
-        description=f'''Hey {member.mention}, welcome to your own BrainOnani community!
-        Learn, Lead and Serve Brainstorming ideas into reality to make a difference together through this community !'''
+        description=f'''
+Welcome to Brain Onani, {member.mention}.
+
+Congratulations on joining one of the fastest growing learner's communities of college students. 🤩
+
+Perks of joining Brain Onani's Discord server: -
+> • Separate channels for tech, business and finance.😯
+> • Daily news of various domains. 📈
+> • Internships, projects, and many college opportunities😨
+> • Separate voice channels. 🎶
+> • Most reliable and trustworthy learning resources. 📖
+> • Hackathons, contents, quizzes and many exciting events by Brain Onani.🎉
+
+Wanna become our Pro member by earning points? Score the most and get exciting rewards every month.🏆😎 
+
+BO gives:- 
+> • 10 Points per presentation.
+> •  5 Points for attending sessions.
+> •  2 Points per promotional post.
+> • 1/2 Point for sharing news and valuable resources.
+
+Don’t you feel like introducing yourself? Say ‘Hi’👋        
+        '''
         )
         await channel.send(embed=embed)
 
