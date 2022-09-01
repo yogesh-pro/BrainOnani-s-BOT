@@ -48,11 +48,11 @@ class Meetings(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_any_role('og','admin')
-    async def alert(self,ctx,*,msg=None):
+    async def alert(self,ctx,url=None,*,msg):
         '''DM all intrested members a remainder of meeting.'''
         members = discord.utils.get(ctx.guild.roles,name="attendee").members
         embed = discord.Embed(title="Meeting Update!",description=f"{msg}")
-        button = Button(label="Join now",url="https://discord.com/channels/999239208831037580/999239209263046697")
+        button = Button(label="Join now",url=url if url else "https://discord.com/channels/999239208831037580/999239209263046697")
         view = View().add_item(button)
         for user in members:
             await user.send(embed=embed,view=view)
