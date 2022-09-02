@@ -8,17 +8,18 @@ from datetime import datetime
 from discord.ext import commands
 from discord.ext.commands import errors
 from utils import default
+from cogs.meetings import MEET_MESSAGE_IDS as MEETING_IDS
 
-MEETING_IDS = []
 
 def meet_msg_ids():
     global MEETING_IDS
     from cogs.meetings import MEET_MESSAGE_IDS
     coll = pymongo.MongoClient("mongodb+srv://yogesh:malware@cluster0.qr7kl.mongodb.net/?retryWrites=true&w=majority")['main-database']['general']
-    data = coll.find({"data.type":"meeting_ids"})
-    database_ids = [] if (data is None) else [x for x in data][0]["data"]["data"]
+
+    data = coll.find({"data.type": "meeting_ids"})
+    database_ids = [] if data is None else list(data)[0]["data"]["data"]
     cache_ids = MEET_MESSAGE_IDS
-    net_ids = database_ids+cache_ids
+    net_ids = database_ids + cache_ids
     MEETING_IDS = net_ids
 
 
@@ -30,32 +31,23 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, err):
-        if isinstance(err, errors.MissingRequiredArgument) or isinstance(err, errors.BadArgument):
+        if isinstance(err, (errors.MissingRequiredArgument, errors.BadArgument)):
             helper = str(ctx.invoked_subcommand) if ctx.invoked_subcommand else str(ctx.command)
-            await ctx.send_help(helper)
 
+            await ctx.send_help(helper)
         elif isinstance(err, errors.CommandInvokeError):
             error = default.traceback_maker(err.original)
-
             if "2000 or fewer" in str(err) and len(ctx.message.clean_content) > 1900:
-                return await ctx.send(
-                    "You attempted to make the command display more than 2,000 characters...\n"
-                    "Both error and command will be ignored."
-                )
+                return await ctx.send("You attempted to make the command display more than 2,000 characters...\nBoth error and command will be ignored.")
 
             await ctx.send(f"There was an error processing the command ;-;\n{error}")
-
         elif isinstance(err, errors.CheckFailure):
             pass
-
         elif isinstance(err, errors.MaxConcurrencyReached):
             await ctx.send("You've reached max capacity of command usage at once, please finish the previous one...")
 
         elif isinstance(err, errors.CommandOnCooldown):
             await ctx.send(f"This command is on cooldown... try again in {err.retry_after:.2f} seconds.")
-
-        elif isinstance(err, errors.CommandNotFound):
-            pass
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -95,6 +87,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self,payload):
+        from cogs.meetings import MEET_MESSAGE_IDS as MEETING_IDS
         if payload.message_id in MEETING_IDS:
             await payload.member.add_roles(discord.utils.get(payload.member.guild.roles,name="attendee"))
             await payload.member.send("I will notify you before meeting starts.")
@@ -102,6 +95,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
+        from cogs.meetings import MEET_MESSAGE_IDS as MEETING_IDS
         guild = self.bot.get_guild(payload.guild_id)
         member = discord.utils.get(guild.members, id=payload.user_id)
         if payload.message_id in MEETING_IDS:
