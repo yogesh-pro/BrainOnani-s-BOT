@@ -8,8 +8,8 @@ from datetime import datetime
 from discord.ext import commands
 from discord.ext.commands import errors
 from utils import default
-from cogs.meetings import MEET_MESSAGE_IDS as MEETING_IDS
-
+#from cogs.meetings import MEET_MESSAGE_IDS as MEETING_IDS
+MEETING_IDS = None
 
 def meet_msg_ids():
     global MEETING_IDS
@@ -87,7 +87,9 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self,payload):
-        from cogs.meetings import MEET_MESSAGE_IDS as MEETING_IDS
+        global MEETING_IDS
+        from cogs.meetings import MEET_MESSAGE_IDS
+        MEETING_IDS += MEET_MESSAGE_IDS
         if payload.message_id in MEETING_IDS:
             await payload.member.add_roles(discord.utils.get(payload.member.guild.roles,name="attendee"))
             await payload.member.send("I will notify you before meeting starts.")
@@ -95,7 +97,9 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload):
-        from cogs.meetings import MEET_MESSAGE_IDS as MEETING_IDS
+        global MEETING_IDS
+        from cogs.meetings import MEET_MESSAGE_IDS
+        MEETING_IDS += MEET_MESSAGE_IDS
         guild = self.bot.get_guild(payload.guild_id)
         member = discord.utils.get(guild.members, id=payload.user_id)
         if payload.message_id in MEETING_IDS:
